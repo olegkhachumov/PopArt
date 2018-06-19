@@ -14,13 +14,13 @@ using namespace std;
 
 struct ContextPopArt {
 	Mat src_image;			//original image
-	Mat dst;				//result image
+	Mat dst;			//result image
 	Mat src_grayscale;		//grayscale image
-	Mat src_bg;				//sharpen grayscale image
+	Mat src_bg;			//sharpen grayscale image
 	Mat background_lut;		//lut for background
 	Mat halftone_lut;		//lut for halftone effect
 	int effect_amount;		//effect amount
-	int halftone_radius;	//halftone radius
+	int halftone_radius;		//halftone radius
 
 	~ContextPopArt() {
 		src_image.release();
@@ -83,7 +83,7 @@ Mat sharp(Mat const &image, const int &radius) {
 		return image;
 	Mat dst;
 	blur(image, dst, Size(radius, radius), Point(-1, -1), 2);	//blurring image
-	addWeighted(image, 2, dst, -1, 0, dst);						//difference between src image and blurred image
+	addWeighted(image, 2, dst, -1, 0, dst);				//difference between src image and blurred image
 	return dst;
 }
 
@@ -92,7 +92,7 @@ Mat halftone_mask(Mat const &im_gray, const int &halftone_size) {
 		Creation of a grayscale mask based on an image in grayscale.
 		The radius will be greater than the darker pixels in the center of the circle.
 	*/
-	Mat mask = Mat::zeros(im_gray.rows, im_gray.cols, CV_8UC1);		//
+	Mat mask = Mat::zeros(im_gray.rows, im_gray.cols, CV_8UC1);		
 	int diameter = (static_cast<double>(max(im_gray.rows, im_gray.cols)) / 512)* halftone_size;
 	Mat_<uchar> img = im_gray;
 	if (diameter < 3)
@@ -133,13 +133,13 @@ void updateAmount(int, void *data) {
 
 	ContextPopArt *context = reinterpret_cast<ContextPopArt *>(data);
 	Mat dst = context->dst.clone();
-	double ratio = context->effect_amount * 1.0 / 100;					// effect amount in percent
+	double ratio = context->effect_amount * 1.0 / 100;			// effect amount in percent
 	dst = (1 - ratio) * context->src_image + ratio * context->dst;		// superposition of src_image and dst_image
 	imshow("Pop Art", dst);
 }
 
 void updatePopArt(int, void *data) {
-	PopArt(data);			//apply PopArt for new halftone size
+	PopArt(data);		//apply PopArt for new halftone size
 	updateAmount(0, data);	//update the displayed image with the old amount
 }
 
@@ -151,22 +151,22 @@ void resize_image(Mat const & src, Mat & dst) {
 
 ContextPopArt setup(Mat & src) {
 	int temp = min(2048, max(src.rows, src.cols));
-	int coef = pow(2, temp / 1024);							//blur ratio for sharp
+	int coef = pow(2, temp / 1024);					//blur ratio for sharp
 
 	if (max(src.rows, src.cols) > MAX_IMAGE_SIZE) {			//resize image if its size large then 4088x4088 pix
 		resize_image(src, src);
 	}
 
-	Mat dst(src.size(), src.type());						//creating result image
-	Mat src_grayscale;										//creating grayscale image
+	Mat dst(src.size(), src.type());				//creating result image
+	Mat src_grayscale;						//creating grayscale image
 	cvtColor(src, src_grayscale, COLOR_BGR2GRAY);
 
-	Mat src_bg;												//creating sharpen grayscale background image 
+	Mat src_bg;							//creating sharpen grayscale background image 
 	src_bg = sharp(src, coef * 32);
 	src_bg = sharp(src_bg, coef * 23);
 	cvtColor(src_bg, src_bg, COLOR_BGR2GRAY);
 
-	Mat background_lut = createLUT(colormap_background);	//creating background lut
+	Mat background_lut = createLUT(colormap_background);		//creating background lut
 	Mat halftone_lut = createLUT(colormap_halftone);		//creating lut for halftone effect
 
 	return { src, dst, src_grayscale, src_bg,background_lut , halftone_lut, 100, 3 };	//start pack for PopArt function
