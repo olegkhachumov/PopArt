@@ -177,7 +177,7 @@ int main(int argc, const char *argv[])
 
 	if (argc < 2)
 	{
-		cerr << "We need an image to process here. Please run: popArt [path_to_image]" << endl;
+		cerr << "We need an image to process here. Please run: befunky [path_to_image]" << endl;
 		return -1;
 	}
 
